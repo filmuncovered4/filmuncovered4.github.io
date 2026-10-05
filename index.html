@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Noa Dedic — video editor specializing in long-form YouTube theory, concept trailers, client trailers, motion graphics, sound design and transformative editing.">
+  <title>Noa Dedic — Video Editor</title>
+
+  <style>
+    :root {
+      --bg: #000;
+      --text: #f5f5f5;
+      --muted: #999;
+      --line: #262626;
+      --card: #0b0b0b;
+      --max-width: 1100px;
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--bg); }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.6;
+    }
+    a { color: inherit; text-decoration: none; }
+    a:focus-visible {
+      outline: 2px solid #fff;
+      outline-offset: 4px;
+    }
+    .container {
+      width: min(calc(100% - 40px), var(--max-width));
+      margin: 0 auto;
+    }
+
+    header {
+      border-bottom: 1px solid var(--line);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(0,0,0,.94);
+      backdrop-filter: blur(10px);
+    }
+    nav {
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .logo { font-weight: 700; letter-spacing: -.03em; }
+    .nav-links {
+      display: flex;
+      gap: 22px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    .hero {
+      padding: 110px 0 90px;
+      border-bottom: 1px solid var(--line);
+    }
+    .eyebrow {
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      font-size: 12px;
+      margin-bottom: 18px;
+    }
+    h1 {
+      max-width: 850px;
+      margin: 0;
+      font-size: clamp(48px, 9vw, 100px);
+      line-height: .92;
+      letter-spacing: -.065em;
+    }
+    .hero p {
+      max-width: 680px;
+      margin: 30px 0 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
+    .hero-actions {
+      margin-top: 30px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .button {
+      display: inline-block;
+      border: 1px solid var(--text);
+      padding: 11px 17px;
+      border-radius: 999px;
+      font-size: 14px;
+    }
+    .button:hover { background: var(--text); color: var(--bg); }
+
+    section {
+      padding: 85px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 30px;
+      align-items: end;
+      margin-bottom: 38px;
+    }
+    h2 {
+      margin: 0;
+      font-size: clamp(30px, 5vw, 52px);
+      line-height: 1;
+      letter-spacing: -.045em;
+    }
+    .section-heading p {
+      max-width: 470px;
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .video-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
+    }
+    .video-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .video-embed {
+      aspect-ratio: 16 / 9;
+      background: #050505;
+    }
+    .video-embed iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
+
+
+    /* ---- Page switching (one HTML file, separate "pages") ---- */
+    [data-view][hidden] { display: none !important; }
+    .back-link {
+      display: inline-block;
+      margin-bottom: 34px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .back-link:hover { color: var(--text); }
+    .nav-links a.active { color: var(--text); }
+    #long-form, #trailers { min-height: 80vh; }
+
+    /* ---- Local preview fallback (file:// can't play YouTube embeds) ---- */
+    .yt-thumb {
+      position: relative;
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: #050505;
+    }
+    .yt-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .yt-thumb .yt-play {
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      width: 68px;
+      height: 48px;
+      border-radius: 12px;
+      background: rgba(0,0,0,.75);
+      border: 1px solid rgba(255,255,255,.4);
+    }
+    .yt-thumb .yt-play::after {
+      content: "";
+      position: absolute;
+      left: 27px;
+      top: 14px;
+      border-left: 16px solid #fff;
+      border-top: 10px solid transparent;
+      border-bottom: 10px solid transparent;
+    }
+    .yt-thumb:hover .yt-play { background: #f00; border-color: #f00; }
+    .local-note {
+      background: #1a1400;
+      color: #e8c860;
+      border-bottom: 1px solid #3a2f00;
+      padding: 10px 20px;
+      font-size: 13px;
+      text-align: center;
+    }
+    .video-info { padding: 22px; }
+    .video-info h3 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      letter-spacing: -.02em;
+    }
+    .video-info p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+    .role {
+      margin-top: 14px !important;
+      color: var(--text) !important;
+      font-size: 12px !important;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .featured {
+      padding-bottom: 40px;
+    }
+    .more-work {
+      text-align: center;
+      margin-top: 35px;
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+    }
+    .about-grid p { color: var(--muted); margin-top: 0; }
+    .skills {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 30px;
+      margin-top: 24px;
+    }
+    .skill {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 0;
+      color: var(--muted);
+    }
+
+    .contact {
+      text-align: center;
+      padding: 110px 0;
+    }
+    .contact h2 {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+    .contact p {
+      color: var(--muted);
+      max-width: 580px;
+      margin: 24px auto 30px;
+    }
+    footer {
+      padding: 28px 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 760px) {
+      .container { width: min(calc(100% - 28px), var(--max-width)); }
+      .hero { padding: 75px 0 65px; }
+      section { padding: 65px 0; }
+      .section-heading, .about-grid { display: block; }
+      .section-heading p { margin-top: 18px; }
+      .video-list { grid-template-columns: 1fr; }
+      .about-grid > div + div { margin-top: 45px; }
+      .nav-links { gap: 12px; font-size: 12px; }
+      h1 { font-size: clamp(46px, 15vw, 80px); }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- =========================================================
+       BASIC INFO — EDIT THESE IF YOU WANT
+       ========================================================= -->
+  <header>
+    <div class="container">
+      <nav aria-label="Main navigation">
+        <a class="logo" href="#home">NOA DEDIC</a>
+        <div class="nav-links">
+          <a href="#home" data-nav="home">Work</a>
+          <a href="#long-form" data-nav="long-form">Long-Form</a>
+          <a href="#trailers" data-nav="trailers">Trailers</a>
+          <a href="#about">About</a>
+          <a href="#contact">Contact</a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ========================= HERO ======================== -->
+    <section class="hero" data-view="home">
+      <div class="container">
+        <div class="eyebrow">Video Editor · Croatia</div>
+
+        <h1>Editing stories<br>with intent.</h1>
+
+        <p>
+          Video editor focused on long-form YouTube storytelling,
+          theory, concept trailers, sound design, motion graphics
+          and transformative editing.
+        </p>
+
+        <div class="hero-actions">
+          <a class="button" href="#work">View Work</a>
+          <a class="button" href="mailto:YOUR-EMAIL@example.com">Get in touch</a>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- =========================================================
+         HOMEPAGE / FEATURED WORK
+
+         ONLY THESE 4 VIDEOS SHOW ON THE MAIN PAGE:
+         1. Long-form
+         2. Long-form
+         3. Trailer
+         4. Trailer
+
+         Change these four whenever you want to feature something.
+         The full 26-video portfolio is further down.
+         ========================================================= -->
+    <section id="work" class="featured" data-view="home">
+      <div class="container">
+
+        <div class="section-heading">
+          <h2>Selected<br>Work</h2>
+          <p>
+            A selection of long-form theory videos and trailer work.
+            Explore the full portfolio below.
+          </p>
+        </div>
+
+        <div class="video-list">
+
+          <!-- FEATURED LONG-FORM 1 -->
+          <article class="video-card">
+            <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/uH9G2mrFX70?si=8C4MCHubAjg9fLkW&amp;start=18"
+                title="Featured Long-Form Video 1"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+            <div class="video-info">
+              <h3>Featured Long-Form Video 1</h3>
+              <p>Featured project description.</p>
+              <p class="role">Research · Theory · Script · Voice · Edit</p>
+            </div>
+          </article>
+
+          <!-- FEATURED LONG-FORM 2 -->
+          <article class="video-card">
+            <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/oJjZLhH1T4U"
+                title="Featured Long-Form Video 2"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+            <div class="video-info">
+              <h3>Featured Long-Form Video 2</h3>
+              <p>Featured project description.</p>
+              <p class="role">Research · Theory · Script · Voice · Edit</p>
+            </div>
+          </article>
+
+          <!-- FEATURED TRAILER 1 -->
+          <article class="video-card">
+            <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/Vcr0Ilejbmc"
+                title="Featured Trailer 1"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+            <div class="video-info">
+              <h3>Featured Trailer 1</h3>
+              <p>Featured trailer description.</p>
+              <p class="role">Editing · Rotoscoping · Compositing · Sound Design</p>
+            </div>
+          </article>
+
+          <!-- FEATURED TRAILER 2 -->
+          <article class="video-card">
+            <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Featured Trailer 2"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+            <div class="video-info">
+              <h3>Featured Trailer 2</h3>
+              <p>Featured trailer description.</p>
+              <p class="role">Editing · Rotoscoping · Compositing · Sound Design</p>
+            </div>
+          </article>
+
+        </div>
+
+        <div class="more-work">
+          <a class="button" href="#long-form">See All Long-Form Work</a>
+          <a class="button" href="#trailers">See All Trailers</a>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- =========================================================
+         ALL 9 LONG-FORM VIDEOS
+
+         EDIT ONLY:
+         - YOUR_VIDEO_ID_X
+         - title
+         - description
+         - role (optional)
+         ========================================================= -->
+    <section id="long-form" data-view="long-form">
+      <div class="container">
+        <a class="back-link" href="#home">&larr; Back to home</a>
+        <div class="section-heading">
+          <h2>Long-Form<br>Video Editing</h2>
+          <p>
+            Theory and storytelling videos researched, scripted,
+            voiced, edited and packaged by me.
+          </p>
+        </div>
+
+        <div class="video-list">
+
+            <!-- VIDEO 1 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Research · Theory · Script · Voice · Edit</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 2 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Research · Theory · Script · Voice · Edit</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 3 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Research · Theory · Script · Voice · Edit</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 4 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Research · Theory · Script · Voice · Edit</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 5 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Research · Theory · Script · Voice · Edit</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 6 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Research · Theory · Script · Voice · Edit</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 7 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Research · Theory · Script · Voice · Edit</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 8 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Research · Theory · Script · Voice · Edit</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 9 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Research · Theory · Script · Voice · Edit</p>
+              </div>
+            </article>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- =========================================================
+         ALL 17 TRAILERS
+
+         EDIT ONLY:
+         - YOUR_VIDEO_ID_X
+         - title
+         - description
+         - role (optional)
+         ========================================================= -->
+    <section id="trailers" data-view="trailers">
+      <div class="container">
+        <a class="back-link" href="#home">&larr; Back to home</a>
+        <div class="section-heading">
+          <h2>Client &<br>Concept Trailers</h2>
+          <p>
+            Client work, spec trailers and transformative concepts
+            built through editing, compositing, rotoscoping,
+            music editing and sound design.
+          </p>
+        </div>
+
+        <div class="video-list">
+
+            <!-- VIDEO 1 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Editing · Rotoscoping · Compositing · Sound Design</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 2 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Editing · Rotoscoping · Compositing · Sound Design</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 3 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Editing · Rotoscoping · Compositing · Sound Design</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 4 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Editing · Rotoscoping · Compositing · Sound Design</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 5 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Editing · Rotoscoping · Compositing · Sound Design</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 6 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Editing · Rotoscoping · Compositing · Sound Design</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 7 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Editing · Rotoscoping · Compositing · Sound Design</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 8 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Editing · Rotoscoping · Compositing · Sound Design</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 9 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Editing · Rotoscoping · Compositing · Sound Design</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 10 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Editing · Rotoscoping · Compositing · Sound Design</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 11 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Editing · Rotoscoping · Compositing · Sound Design</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 12 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Editing · Rotoscoping · Compositing · Sound Design</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 13 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Editing · Rotoscoping · Compositing · Sound Design</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 14 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Editing · Rotoscoping · Compositing · Sound Design</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 15 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Editing · Rotoscoping · Compositing · Sound Design</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 16 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Editing · Rotoscoping · Compositing · Sound Design</p>
+              </div>
+            </article>
+
+            <!-- VIDEO 17 — EDIT TITLE, DESCRIPTION, ROLE AND YOUTUBE ID -->
+            <article class="video-card">
+              <div class="video-embed">
+              <!-- PASTE YOUR YOUTUBE LINK INSIDE THE src="" BELOW (replace everything between the quotes) -->
+              <iframe
+                src="https://www.youtube.com/embed/PASTE_VIDEO_LINK_HERE"
+                title="Your Video Title"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                loading="lazy"
+                allowfullscreen></iframe>
+            </div>
+              <div class="video-info">
+                <h3>Your Video Title</h3>
+                <p>Add a short description of this video.</p>
+                <p class="role">Editing · Rotoscoping · Compositing · Sound Design</p>
+              </div>
+            </article>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ========================= ABOUT ======================== -->
+    <section id="about" data-view="home">
+      <div class="container">
+        <div class="about-grid">
+
+          <div>
+            <div class="eyebrow">About</div>
+            <h2>More than<br>an editor.</h2>
+          </div>
+
+          <div>
+            <p>
+              I have been editing since I was young and have spent
+              years studying film, television, YouTube storytelling
+              and trailers as an art form.
+            </p>
+
+            <p>
+              My long-form work often starts with an unusual question.
+              I research obscure real-world events, psychology,
+              science and other ideas to find perspectives that
+              are not immediately obvious, then build the story
+              around them.
+            </p>
+
+            <p>
+              My trailer work is where I experiment most heavily
+              with pacing, music, sound design, rotoscoping,
+              compositing and creating scenes that did not exist
+              in the original material.
+            </p>
+
+            <div class="skills">
+              <div class="skill">Premiere Pro</div>
+              <div class="skill">After Effects</div>
+              <div class="skill">Photoshop</div>
+              <div class="skill">Motion Graphics</div>
+              <div class="skill">Rotoscoping</div>
+              <div class="skill">Sound Design</div>
+              <div class="skill">Music Editing</div>
+              <div class="skill">YouTube Packaging</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ========================= CONTACT ====================== -->
+    <section id="contact" class="contact" data-view="home">
+      <div class="container">
+        <div class="eyebrow">Contact</div>
+        <h2>Have a story that needs an edit?</h2>
+        <p>
+          For editing work, collaborations or creative projects,
+          get in touch.
+        </p>
+        <a class="button" href="mailto:YOUR-EMAIL@example.com">
+          YOUR-EMAIL@example.com
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="container">
+      © 2026 Noa Dedic · Video Editor
+    </div>
+  </footer>
+
+
+  <script>
+    // Safety net: lets you paste a normal YouTube link into src="" (watch, youtu.be, shorts).
+    document.querySelectorAll('.video-embed iframe').forEach(function (f) {
+      var raw = f.getAttribute('src') || '';
+      if (raw.indexOf('/embed/') !== -1 || raw.indexOf('PASTE') !== -1) return;
+      try {
+        var u = new URL(raw.indexOf('http') === 0 ? raw : 'https://' + raw);
+        var host = u.hostname.replace(/^www\./, '').replace(/^m\./, '');
+        var id = null;
+        if (host === 'youtu.be') id = u.pathname.slice(1).split('/')[0];
+        else if (u.pathname === '/watch') id = u.searchParams.get('v');
+        else { var m = u.pathname.match(/^\/(shorts|live)\/([^/?]+)/); if (m) id = m[2]; }
+        if (id) {
+          var t = parseInt(u.searchParams.get('t') || u.searchParams.get('start') || '0', 10);
+          f.src = 'https://www.youtube.com/embed/' + id + (t ? '?start=' + t : '');
+        }
+      } catch (e) {}
+    });
+  </script>
+
+  <script>
+    // When the page is opened by double-clicking the file (file://), YouTube refuses to play embeds
+    // (Error 153). In that case show thumbnails that open the video on YouTube instead.
+    // Once the site is hosted (or run through Live Server) the normal embeds play in the page.
+    if (location.protocol === 'file:') {
+      var note = document.createElement('div');
+      note.className = 'local-note';
+      note.textContent = 'Preview mode: this page was opened from a file, so videos open on YouTube. Host the site (or use VS Code Live Server) to play them inside the page.';
+      document.body.insertBefore(note, document.body.firstChild);
+
+      document.querySelectorAll('.video-embed iframe').forEach(function (f) {
+        var m = (f.src || '').match(/\/embed\/([\w-]{11})/);
+        if (!m) return;
+        var st = (f.src.match(/[?&]start=(\d+)/) || [])[1];
+        var a = document.createElement('a');
+        a.className = 'yt-thumb';
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.href = 'https://www.youtube.com/watch?v=' + m[1] + (st ? '&t=' + st + 's' : '');
+        a.setAttribute('aria-label', 'Watch on YouTube: ' + f.title);
+        a.innerHTML = '<img alt="" src="https://i.ytimg.com/vi/' + m[1] + '/hqdefault.jpg"><span class="yt-play"></span>';
+        f.replaceWith(a);
+      });
+    }
+  </script>
+
+  <script>
+    // Simple page switcher: home (selected work) / long-form / trailers
+    (function () {
+      var sections = document.querySelectorAll('section[data-view]');
+      var navLinks = document.querySelectorAll('[data-nav]');
+
+      function route() {
+        var hash = decodeURIComponent(location.hash.replace('#', '')) || 'home';
+        var view = (hash === 'long-form' || hash === 'trailers') ? hash : 'home';
+
+        sections.forEach(function (sec) {
+          sec.hidden = sec.getAttribute('data-view') !== view;
+        });
+        navLinks.forEach(function (a) {
+          a.classList.toggle('active', a.getAttribute('data-nav') === view);
+        });
+
+        if (view === 'home' && hash !== 'home') {
+          var target = document.getElementById(hash);   // e.g. #about, #contact, #work
+          if (target) { target.scrollIntoView(); return; }
+        }
+        window.scrollTo(0, 0);
+      }
+
+      window.addEventListener('hashchange', route);
+      route();
+    })();
+  </script>
+
+</body>
+</html>
